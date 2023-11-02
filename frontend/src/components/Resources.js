@@ -1,63 +1,79 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-const Resources = () => {
-    const resources = [
-        {
-            title: 'Introduction to AI',
-            link: 'https://www.example.com/introduction-to-ai'
-        },
-        {
-            title: 'AI Agents',
-            link: 'https://www.example.com/ai-agents'
-        },
-        {
-            title: 'Real-world Applications of AI',
-            link: 'https://www.example.com/real-world-applications-of-ai'
-        },
-        {
-            title: 'AI in Business',
-            link: 'https://www.example.com/ai-in-business'
-        },
-        {
-            title: 'AI in Education',
-            link: 'https://www.example.com/ai-in-education'
-        },
-        {
-            title: 'AI in Healthcare',
-            link: 'https://www.example.com/ai-in-healthcare'
-        },
-        {
-            title: 'AI in Entertainment',
-            link: 'https://www.example.com/ai-in-entertainment'
-        },
-        {
-            title: 'AI in Manufacturing',
-            link: 'https://www.example.com/ai-in-manufacturing'
-        },
-        {
-            title: 'AI in Transportation',
-            link: 'https://www.example.com/ai-in-transportation'
-        },
-        {
-            title: 'AI in Agriculture',
-            link: 'https://www.example.com/ai-in-agriculture'
-        },
-    ];
+const SketchPad = () => {
+  const [drawing, setDrawing] = useState(false);
+  const [coordinates, setCoordinates] = useState([]);
+  const canvasRef = useRef(null);
 
-    return (
-        <div id="resourcesContainer">
-            <h2>Resources</h2>
-            <ul>
-                {resources.map((resource, index) => (
-                    <li key={index}>
-                        <a href={resource.link} target="_blank" rel="noopener noreferrer">
-                            {resource.title}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
+  const startDrawing = () => {
+    setDrawing(true);
+  };
+
+  const endDrawing = () => {
+    setDrawing(false);
+    generateCode();
+  };
+
+  const drawLine = (event) => {
+    if (!drawing) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    setCoordinates((prevCoordinates) => [...prevCoordinates, { x, y }]);
+    
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const generateCode = () => {
+    const canvas = canvasRef.current;
+    const imageData = canvas.toDataURL("image/png");
+    const code = `
+      <html>
+        <head>
+          <title>Generated Website</title>
+        </head>
+        <body>
+          <div style="background-image: url(${imageData});"></div>
+        </body>
+      </html>
+    `;
+    
+    console.log(code);
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'black';
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mouseup', endDrawing);
+    canvas.addEventListener('mousemove', drawLine);
+
+    return () => {
+      canvas.removeEventListener('mousedown', startDrawing);
+      canvas.removeEventListener('mouseup', endDrawing);
+      canvas.removeEventListener('mousemove', drawLine);
+    };
+  }, []);
+
+  return (
+    <div>
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        style={{ border: '1px solid black' }}
+      ></canvas>
+    </div>
+  );
 };
 
-export default Resources;
+export default SketchPad;
