@@ -1,37 +1,65 @@
-import React, { useEffect } from 'react';
-import ReactGA from 'react-ga';
+import React, { useState, useRef, useEffect } from 'react';
 
-const Analytics = () => {
+const SketchPad = () => {
+  const canvasRef = useRef(null);
+  const [drawing, setDrawing] = useState(false);
+  const [ctx, setCtx] = useState(null);
+
   useEffect(() => {
-    ReactGA.initialize('UA-000000-01'); // Replace with your Google Analytics tracking ID
-    ReactGA.pageview(window.location.pathname + window.location.search);
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    setCtx(context);
   }, []);
 
-  return null;
+  const startDrawing = (e) => {
+    setDrawing(true);
+    const { offsetX, offsetY } = e.nativeEvent;
+    ctx.beginPath();
+    ctx.moveTo(offsetX, offsetY);
+  };
+
+  const draw = (e) => {
+    if (!drawing) return;
+    const { offsetX, offsetY } = e.nativeEvent;
+    ctx.lineTo(offsetX, offsetY);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    setDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+  };
+
+  const generateWebsiteCode = () => {
+    const canvasData = ctx.getImageData(
+      0,
+      0,
+      canvasRef.current.width,
+      canvasRef.current.height
+    );
+
+    // Convert canvasData to website code
+    // ... code to convert canvasData to website code ...
+  };
+
+  return (
+    <div>
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseOut={stopDrawing}
+      />
+      <button onClick={clearCanvas}>Clear</button>
+      <button onClick={generateWebsiteCode}>Generate Website Code</button>
+    </div>
+  );
 };
 
-export const trackUserEngagement = (category, action, label) => {
-  ReactGA.event({
-    category: category,
-    action: action,
-    label: label
-  });
-};
-
-export const trackQuizPerformance = (category, action, value) => {
-  ReactGA.event({
-    category: category,
-    action: action,
-    value: value
-  });
-};
-
-export const trackLiveDemoInteraction = (category, action, label) => {
-  ReactGA.event({
-    category: category,
-    action: action,
-    label: label
-  });
-};
-
-export default Analytics;
+export default SketchPad;

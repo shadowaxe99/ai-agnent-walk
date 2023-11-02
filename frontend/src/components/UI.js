@@ -1,36 +1,53 @@
-import React from 'react';
-import Exploration from './Exploration';
-import Quiz from './Quiz';
-import LiveDemo from './LiveDemo';
-import Glossary from './Glossary';
-import Resources from './Resources';
-import Feedback from './Feedback';
-import Navigation from './Navigation';
+import React, { useRef, useState } from 'react';
 
-const UI = () => {
-    return (
-        <div>
-            <Navigation />
-            <div id="explorationContainer">
-                <Exploration />
-            </div>
-            <div id="quizContainer">
-                <Quiz />
-            </div>
-            <div id="liveDemoContainer">
-                <LiveDemo />
-            </div>
-            <div id="glossaryContainer">
-                <Glossary />
-            </div>
-            <div id="resourcesContainer">
-                <Resources />
-            </div>
-            <div id="feedbackContainer">
-                <Feedback />
-            </div>
-        </div>
-    );
+const SketchPad = () => {
+  const canvasRef = useRef(null);
+  const [drawing, setDrawing] = useState(false);
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    setDrawing(true);
+  };
+
+  const continueDrawing = (e) => {
+    if (!drawing) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const finishDrawing = () => {
+    setDrawing(false);
+    generateCode();
+  };
+
+  const generateCode = () => {
+    // Code generation logic based on the drawn sketch
+    // Convert the drawings into HTML/CSS/JS code, both frontend and backend
+    // Create a website that matches the sketch
+  };
+
+  return (
+    <div>
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        onMouseDown={startDrawing}
+        onMouseMove={continueDrawing}
+        onMouseUp={finishDrawing}
+      />
+    </div>
+  );
 };
 
-export default UI;
+export default SketchPad;

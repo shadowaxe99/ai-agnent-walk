@@ -1,40 +1,88 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Exploration = () => {
-    const [explorationData, setExplorationData] = useState(null);
+const SketchPad = () => {
+    const [drawing, setDrawing] = useState([]);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [generatedCode, setGeneratedCode] = useState(null);
 
     useEffect(() => {
-        const fetchExplorationData = async () => {
-            try {
-                const response = await axios.get('/api/exploration');
-                setExplorationData(response.data);
-            } catch (error) {
-                console.error('Error fetching exploration data:', error);
-            }
+        const canvas = document.getElementById('sketchPad');
+        const context = canvas.getContext('2d');
+
+        const handleMouseDown = ({ offsetX, offsetY }) => {
+            setIsDrawing(true);
+            setDrawing([{ x: offsetX, y: offsetY }]);
         };
 
-        fetchExplorationData();
-    }, []);
+        const handleMouseMove = ({ offsetX, offsetY }) => {
+            if (!isDrawing) return;
 
-    const startExploration = () => {
-        // Logic to start the exploration goes here
-    };
+            const updatedDrawing = [...drawing, { x: offsetX, y: offsetY }];
+            setDrawing(updatedDrawing);
+            draw(updatedDrawing, context);
+        };
+
+        const handleMouseUp = () => {
+            setIsDrawing(false);
+            generateCode();
+        };
+
+        const draw = (drawing, context) => {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.lineWidth = 2;
+            context.strokeStyle = '#000';
+
+            context.beginPath();
+            context.moveTo(drawing[0].x, drawing[0].y);
+
+            drawing.forEach(point => {
+                context.lineTo(point.x, point.y);
+            });
+
+            context.stroke();
+            context.closePath();
+        };
+
+        const generateCode = () => {
+            // Logic to generate code based on drawing goes here
+            const generatedCode = `<!DOCTYPE html>
+            <html>
+              <head>
+                <title>Generated Website</title>
+                <style>
+                  /* CSS styles based on drawing */
+                </style>
+              </head>
+              <body>
+                <!-- HTML structure based on drawing -->
+              </body>
+            </html>`;
+
+            setGeneratedCode(generatedCode);
+        };
+
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            canvas.removeEventListener('mousedown', handleMouseDown);
+            canvas.removeEventListener('mousemove', handleMouseMove);
+            canvas.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [drawing, isDrawing]);
 
     return (
-        <div id="explorationContainer">
-            <h1>AI Unveiled: An Interactive Exploration</h1>
-            {explorationData ? (
-                <div>
-                    <h2>{explorationData.title}</h2>
-                    <p>{explorationData.description}</p>
-                    <button onClick={startExploration}>Start Exploration</button>
-                </div>
+        <div>
+            <canvas id="sketchPad" width={800} height={400} />
+            {generatedCode ? (
+                <textarea value={generatedCode} readOnly />
             ) : (
-                <p>Loading...</p>
+                <p>Draw on the sketch pad</p>
             )}
         </div>
     );
 };
 
-export default Exploration;
+export default SketchPad;
